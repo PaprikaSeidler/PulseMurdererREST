@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PulseMurdererREST.Records;
 using PulseMurdererV3;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -37,10 +38,26 @@ namespace PulseMurdererREST.Controllers
             return "value";
         }
 
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         // POST api/<PlayersController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public ActionResult<Player> Post([FromBody] PlayerRecord newPlayerRecord)
         {
+            try
+            {
+                Player converted = RecordHelper.ConvertPlayerRecord(newPlayerRecord);
+                Player createdPlayer = _playerRepository.AddPlayer(converted);
+                return Created("/" + createdPlayer.Id, createdPlayer);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         // PUT api/<PlayersController>/5
