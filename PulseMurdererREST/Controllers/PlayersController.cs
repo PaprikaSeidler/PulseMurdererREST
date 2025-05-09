@@ -31,11 +31,19 @@ namespace PulseMurdererREST.Controllers
 
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         // GET api/<PlayersController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public ActionResult<Player> Get(int id)
         {
-            return "value";
+
+            Player player = _playerRepository.GetPlayerById(id);
+            if (player != null)
+            {
+                return Ok(player);
+            }
+            return NotFound(player);
         }
 
         [ProducesResponseType(StatusCodes.Status201Created)]
