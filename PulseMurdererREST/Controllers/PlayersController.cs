@@ -70,7 +70,7 @@ namespace PulseMurdererREST.Controllers
             try
             {
                 Player convertedPlayer = RecordHelper.ConvertPlayerRecord(playerToUpdate);
-                Player updatedPlayer = _playerRepository.UpdatePlayer(convertedPlayer);
+                Player updatedPlayer = _playerRepository.UpdatePlayer(id, convertedPlayer);
 
                 if (updatedPlayer != null)
                 {
