@@ -64,9 +64,9 @@ namespace PulseMurdererREST.Controllers {
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         // PUT api/<PlayersController>/5
         [HttpPut("{id}")]
-        public ActionResult<Player> Put(int id, [FromBody] PlayerRecord playerToUpdate) {
+        public ActionResult<Player> Put(int id, [FromBody] PlayerRecord newValue) {
             try {
-                Player? convertedPlayer = RecordHelper.ConvertPlayerRecord(playerToUpdate);
+                Player? convertedPlayer = RecordHelper.ConvertPlayerRecord(newValue);
                 Player? updatedPlayer = _playerRepository.UpdatePlayer(id, convertedPlayer);
 
                 if (updatedPlayer != null) {
