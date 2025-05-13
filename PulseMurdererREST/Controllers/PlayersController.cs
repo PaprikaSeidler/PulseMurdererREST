@@ -64,9 +64,9 @@ namespace PulseMurdererREST.Controllers {
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         // PUT api/<PlayersController>/5
         [HttpPut("{id}")]
-        public ActionResult<Player> Put(int id, [FromBody] PlayerRecord newValue) {
+        public ActionResult<Player> Put(int id, [FromBody] PlayerRecord playerToUpdate) {
             try {
-                Player? convertedPlayer = RecordHelper.ConvertPlayerRecord(newValue);
+                Player? convertedPlayer = RecordHelper.ConvertPlayerRecord(playerToUpdate);
                 Player? updatedPlayer = _playerRepository.UpdatePlayer(id, convertedPlayer);
 
                 if (updatedPlayer != null) {
@@ -117,12 +117,41 @@ namespace PulseMurdererREST.Controllers {
                 _playerRepository.TallyVotes();
 
                 // OPTIONAL: WebSocket broadcast here
-                /*GameSocketHandler.BroadcastPlayers(_playerRepository.GetAllPlayers());*/
                 string? toJson = JsonSerializer.Serialize(_playerRepository.GetAllPlayers());
                 UDPSender.Send(toJson);
             }
 
             return Ok("Vote recorded");
+        }
+
+        private void ResolveVotes(List<Player> alivePlayers) {
+            var groupedVotes = alivePlayers
+                .GroupBy(p => p.VotesRecieved)
+                .Select(g => new { PlayerId = g.Key, Count = g.Count() })
+                .OrderByDescending(g => g.Count)
+                .ToList();
+
+            if (groupedVotes.Count == 0 || groupedVotes[0]?.PlayerId == null)
+                return;
+
+            int eliminatedId = groupedVotes[0].PlayerId;
+
+            var eliminatedPlayer = _playerRepository.GetPlayerById(eliminatedId);
+
+            if (eliminatedPlayer != null) {
+                eliminatedPlayer.IsAlive = false;
+                _playerRepository.UpdatePlayer(eliminatedId, eliminatedPlayer);
+            }
+
+            // Clear all votes
+            foreach (var player in alivePlayers) {
+                player.VotesRecieved = 0;
+                _playerRepository.UpdatePlayer(player.Id, player);
+            }
+
+            // Notify clients via WebSocket
+            string? toJson = JsonSerializer.Serialize(_playerRepository.GetAllPlayers());
+            UDPSender.Send(toJson);
         }
     }
 }
