@@ -162,5 +162,25 @@ namespace PulseMurdererREST.Controllers {
             string? toJson = JsonSerializer.Serialize(_playerRepository.GetAllPlayers());
             UDPSender.Send(toJson);
         }
+        [HttpPost("{murdererId}/kill")]
+        public ActionResult Kill(int murdererId, [FromBody] VoteRecord victim) {
+            var killer = _playerRepository.GetPlayerById(murdererId);
+            var target = _playerRepository.GetPlayerById(victim.TargetId);
+
+            if (killer == null || target == null)
+                return BadRequest("Invalid killer or target");
+
+            if (!killer.IsMurderer || !killer.IsAlive)
+                return BadRequest("You are not allowed to kill");
+
+            target.IsAlive = false;
+            _playerRepository.UpdatePlayer(target.Id, target);
+
+            string toJson = JsonSerializer.Serialize(_playerRepository.GetAllPlayers());
+            UDPSender.Send(toJson);
+
+            return Ok("Kill successful");
+        }
+
     }
 }
