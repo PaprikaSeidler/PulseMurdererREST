@@ -86,7 +86,16 @@ namespace PulseMurdererREST.Controllers {
 
         // DELETE api/<PlayersController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id) {
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public ActionResult<Player> Delete(int id) {
+            try{
+                Player? toRemove = _playerRepository?.Remove(id);
+                return Ok(toRemove);
+            }
+            catch(ArgumentNullException ex){
+                return BadRequest(ex.Message);
+            }
         }
 
         [ProducesResponseType(StatusCodes.Status200OK)]
