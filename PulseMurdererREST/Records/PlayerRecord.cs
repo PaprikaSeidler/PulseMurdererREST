@@ -2,7 +2,7 @@
 
 namespace PulseMurdererREST.Records
 {
-    public record PlayerRecord(int? Id, string? Name, string? Avatar, bool IsMurderer  );
+    public record PlayerRecord(int? Id, string? Name, string? Avatar, bool IsMurderer, bool IsAlive);
 
     public static class RecordHelper 
     {
@@ -21,7 +21,8 @@ namespace PulseMurdererREST.Records
                 Id = (int)record.Id,
                 Name = record.Name,
                 Avatar = record.Avatar,
-                IsMurderer = record.IsMurderer
+                IsMurderer = record.IsMurderer,
+                IsAlive = record.IsAlive
             };
         }
     }
