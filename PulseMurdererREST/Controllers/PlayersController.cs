@@ -101,7 +101,7 @@ namespace PulseMurdererREST.Controllers {
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("{voterId}/vote")]
-        public ActionResult Vote(int voterId, [FromBody] VoteRecord vote) {
+        public ActionResult<Player> Vote(int voterId, [FromBody] VoteRecord vote) {
             var voter = _playerRepository.GetPlayerById(voterId);
             var target = _playerRepository.GetPlayerById(vote.TargetId);
 
@@ -118,10 +118,11 @@ namespace PulseMurdererREST.Controllers {
             voter.HasVoted = true;
 
             // If all alive players have voted, resolve the vote
-            List<Player> alivePlayers = _playerRepository.
+            List<Player>? alivePlayers = _playerRepository?.
                 GetAllPlayers().
                 Where(p => p.IsAlive).
                 ToList();
+
             if (alivePlayers.All(p => p.HasVoted)) {
                 _playerRepository.TallyVotes();
 
@@ -130,7 +131,7 @@ namespace PulseMurdererREST.Controllers {
                 UDPSender.Send(toJson);
             }
 
-            return Ok("Vote recorded");
+            return Ok(voter);
         }
 
         private void ResolveVotes(List<Player> alivePlayers) {
@@ -162,6 +163,7 @@ namespace PulseMurdererREST.Controllers {
             string? toJson = JsonSerializer.Serialize(_playerRepository.GetAllPlayers());
             UDPSender.Send(toJson);
         }
+
         [HttpPost("{murdererId}/kill")]
         public ActionResult Kill(int murdererId, [FromBody] VoteRecord victim) {
             var killer = _playerRepository.GetPlayerById(murdererId);
@@ -182,5 +184,10 @@ namespace PulseMurdererREST.Controllers {
             return Ok("Kill successful");
         }
 
+        [HttpPost("clearVotes")]
+        public ActionResult ClearVotes(){
+            _playerRepository.ClearVotes();
+            return Ok("Votes cleared");
+        }
     }
 }
