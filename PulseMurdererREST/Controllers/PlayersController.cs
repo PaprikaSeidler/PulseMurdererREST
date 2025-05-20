@@ -184,7 +184,7 @@ namespace PulseMurdererREST.Controllers {
             return Ok("Kill successful");
         }
 
-        [HttpPost("clearVotes")]
+        [HttpPut("clearVotes")]
         public ActionResult ClearVotes(){
             _playerRepository.ClearVotes();
             return Ok("Votes cleared");
